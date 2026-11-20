@@ -1,0 +1,18 @@
+<div id="overview">
+  <section class="kpis" id="kpis" aria-label="秒数对账"></section>
+  <div class="workspace">
+    <section class="panel plot-panel" aria-labelledby="plot-title">
+      <div class="panel-heading"><div><p class="eyebrow">营业时段</p><h2 id="plot-title">停运时间线</h2></div><span class="tag" id="balance"></span></div>
+      <div id="timeline" aria-label="设备时间泳道"></div>
+      <div id="legend" class="legend" aria-label="状态图例"></div>
+    </section>
+    <section id="inspector" class="panel" aria-labelledby="evidence-title">
+      <div class="panel-heading"><div><p class="eyebrow">片段复核</p><h2 id="evidence-title">事件证据</h2></div></div>
+      <div id="evidence" aria-live="polite"></div>
+    </section>
+    <section class="panel comparison" aria-labelledby="device-title">
+      <div class="panel-heading"><div><p class="eyebrow">逐台对账</p><h2 id="device-title">设备时长</h2></div><span class="eyebrow">单位 · 秒</span></div>
+      <div id="device-table" class="table-scroll"></div>
+    </section>
+  </div>
+</div>

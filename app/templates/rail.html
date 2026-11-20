@@ -1,0 +1,12 @@
+<aside class="rail">
+  <a class="brand" href="#reconcile" aria-label="扶梯停运统计簿首页">
+    <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+    <span>扶梯停运<br>统计簿</span>
+  </a>
+  <nav aria-label="统计模块">
+    {% for key, title in sections.items() %}
+    <a href="#{{ key }}" data-section="{{ key }}"><span class="rail-tick" aria-hidden="true"></span>{{ title }}</a>
+    {% endfor %}
+  </nav>
+  <div class="rail-foot"><span class="signal" aria-hidden="true"></span> 夜班统计</div>
+</aside>

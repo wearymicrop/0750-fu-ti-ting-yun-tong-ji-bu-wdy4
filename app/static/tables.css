@@ -1,0 +1,11 @@
+.table-scroll { overflow: auto; max-height: 355px; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13px; }
+th, td { padding: 10px 14px; border-top: 1px solid var(--line); white-space: nowrap; }
+th { position: sticky; top: 0; z-index: 1; background: var(--panel-alt); color: var(--muted); font-weight: 550; font-size: 12px; }
+tbody tr:hover { background: var(--panel-alt); }
+.num { text-align: right; }
+.empty { padding: var(--pad); color: var(--quiet); }
+dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px 12px; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+#run-feedback { color: var(--accent); margin-top: 9px; }

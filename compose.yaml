@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${LIFT_PORT:-18444}:8000"
+    environment:
+      LIFT_DB: /data/reports.sqlite
+    volumes:
+      - reports:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+volumes:
+  reports:
