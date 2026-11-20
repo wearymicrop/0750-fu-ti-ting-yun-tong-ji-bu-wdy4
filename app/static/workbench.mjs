@@ -4,9 +4,10 @@ import {drawOverview} from './reconcile.mjs';
 import {drawEvidence} from './evidence.mjs';
 import {drawStage} from './stages.mjs';
 import {drawArchive, drawArchived} from './archive.mjs';
+import {drawOpening, drawOpeningBatches, resetOpening, setOpeningActions, wireOpening} from './openings.mjs';
 
 const links = [...document.querySelectorAll('[data-section]')];
-const state = {sample: 'dirty', result: null, report: null, evidenceKey: 0};
+const state = {sample: 'dirty', result: null, report: null, evidenceKey: 0, opening: null};
 const status = value => { $('status').textContent = value; };
 
 async function inspect(segment) {
@@ -31,14 +32,42 @@ function syncView() {
   $('page-title').textContent = active.textContent.trim();
   $('overview').hidden = section !== 'reconcile';
   $('archive').hidden = section !== 'runs';
-  $('stage').hidden = ['reconcile', 'runs'].includes(section);
+  $('openings').hidden = section !== 'openings';
+  $('stage').hidden = ['reconcile', 'runs', 'openings'].includes(section);
   if (section === 'runs') {
     drawArchived(state.report);
     drawArchive(openReport).catch(error => status(error.message));
+  } else if (section === 'openings') {
+    showOpenings();
   } else if (state.result) {
     if (section === 'reconcile') drawOverview(state.result, inspect);
     else drawStage(section, state.result);
   }
+}
+
+async function openBatch(reportId) {
+  try {
+    state.opening = await request(`/api/runs/${reportId}/openings`);
+    drawOpening(state.opening);
+    setOpeningActions(state.opening);
+    $('opening-feedback').textContent = '已读取留档开放记录';
+  } catch (error) {
+    $('opening-feedback').textContent = error.message;
+  }
+}
+
+async function showOpenings() {
+  try {
+    const batches = await drawOpeningBatches(openBatch);
+    const current = state.report && batches.find(item => item.report_id === state.report.id);
+    if (current) {
+      await openBatch(current.report_id);
+      return;
+    }
+    state.opening = null;
+    $('opening-actions').hidden = !state.report;
+    resetOpening(Boolean(state.report));
+  } catch (error) { status(error.message); }
 }
 
 function showResult(result) {
@@ -143,5 +172,12 @@ $('rerun').addEventListener('click', async () => {
   finally { $('rerun').disabled = false; }
 });
 $('save').disabled = true;
+wireOpening({
+  getReport: () => state.report,
+  onBatch: async reportId => {
+    await showOpenings();
+    await openBatch(reportId);
+  },
+});
 syncView();
 loadSample();

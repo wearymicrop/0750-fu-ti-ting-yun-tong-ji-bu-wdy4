@@ -3,7 +3,7 @@ from app.times import instant
 
 def test_full_sample_workflow(client):
     home = client.get('/')
-    assert home.status_code == 200 and home.text.count('data-section=') == 7
+    assert home.status_code == 200 and home.text.count('data-section=') == 8
     assert client.get('/healthz').json()['service'] == 'lift-duties'
     for stage, field in [('schedules', 'devices'), ('events', 'counts'), ('clipping', 'pieces'),
                          ('attribution', 'segments'), ('exemptions', 'permits'), ('reconcile', 'totals')]:

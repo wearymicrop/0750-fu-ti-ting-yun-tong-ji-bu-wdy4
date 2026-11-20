@@ -32,3 +32,15 @@
 `service = available + responsible + exempt + missing`。每台设备单独核对差额。可用率分母为 `service - exempt`，按百分之一百分点四舍五入输出整数基点。缺证时确认可用率为空，可用率下限按已确认可用秒计算。分母为零时两者均为空。
 
 班报 ID 由输入摘要、来源及规则版本生成。输入与结果独立保存 SHA-256 摘要，结果摘要不包含耗时。对象属性排序后序列化，数组顺序保留以保护证据行号。重跑使用 SQLite 中保留的原始输入，重算摘要与班报 ID 后核对。证据附件包括输入、运行清单和所有片段。按片段起点查询可取回对应报码、重传、班表、审批和计算分类。
+
+## 开放记录
+
+开放批次以班报 `id` 为主键存入 `openings` 表，`POST /api/runs/{id}/openings` 对同一班报幂等：已存在则原样复用（`reused: true`），不新增也不改换结论。每台在册设备输出一个 `status`：
+
+| 状态 | 含义 | 疑点码 |
+|---|---|---|
+| `OPEN` | 证据完整，允许开放 | 无 |
+| `SUSPEND` | 硬阻断，暂停开放 | `OPEN_OUTAGE` 未恢复报码在营业窗口内仍停运；`MAINTENANCE_UNAPPROVED` 计划检修审批为 `pending`/`denied` 且与营业窗口相交 |
+| `REVIEW` | 疑点待人工复核 | `REPORT_CONFLICT` 同报码冲突载荷（合并全部冲突行）；`MISSING_EVIDENCE` 缺证片段（未知原因、超采信等）；`APPROVAL_GAP` 已批准但缺 `approval`；`NO_SERVICE` 无有效营业窗口 |
+
+每条疑点含 `severity`（`SUSPEND` 优先于 `REVIEW`）、`lines`（来源输入行号）、`detail`（文字依据）与 `raw`（原始值）。摘要 `summary` 给出三类设备计数。清单含输入与结果双重 SHA-256 摘要；留档结果摘要不匹配时返回 `OPENING_MISMATCH`。下载附件 `GET /api/runs/{id}/openings/export` 为 `{batch, input}` 规范化 JSON，与页面逐台展示同源，重试不丢失任何疑点记录。

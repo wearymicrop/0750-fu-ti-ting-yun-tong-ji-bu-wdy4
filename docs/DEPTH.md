@@ -15,6 +15,7 @@
 | M5 豁免计入 | 核对确实适用的审批及覆盖秒数 | `GET /api/exemptions/{sample}` | `app/modules/exemptions/register.py` `app/modules/exemptions/apply.py` | `tests/test_exemptions.py` |
 | M6 可用率核对 | 逐台核对四类秒数、差额和可用率 | `GET /api/reconcile/{sample}` | `app/modules/reconcile/balance.py` | `tests/test_reconcile.py` |
 | M7 班报归档 | 保存班报、查询证据、重跑和下载 | `POST /api/runs` | `app/modules/reports/store.py` `app/modules/reports/manifest.py` `app/modules/reports/evidence.py` | `tests/test_reports.py` |
+| M8 开放记录 | 首班车前逐台裁决开放、暂停或待复核并留档 | `POST /api/runs/{id}/openings` | `app/modules/openings/verdict.py` `app/modules/openings/batch.py` `app/modules/openings/store.py` | `tests/test_openings.py` |
 
 ## 陷阱登记
 
@@ -36,3 +37,17 @@
 - 已隔离、已采信和重传行数对平输入。见 `tests/test_events.py::test_event_counts_conserve`。
 - 每台设备的四类秒数对平营业并集，片段连续。见 `tests/test_reconcile.py::test_per_device_conservation_and_contiguity`。
 - 并发保存只写一份 SQLite 记录。见 `tests/test_reports.py::test_duplicate_posts_commit_once`。
+
+## 首班开放裁决（M8）
+
+裁决原则：**先放行证据完整的设备，疑点设备逐台留档，不等统一提交**。每台在册设备必出一个结论，停运、同码冲突或未批检修的设备绝不带疑点开门。
+
+| 结论 | 触发疑点（取最严重者） | 处理位置 |
+|---|---|---|
+| `OPEN` 开放 | 无任何疑点，班表内停运证据链完整 | `verdict.py::adjudicate` |
+| `SUSPEND` 暂停 | `OPEN_OUTAGE` 报码未恢复仍在营业内停运；`MAINTENANCE_UNAPPROVED` 计划检修审批为 pending/denied 且时段落在营业窗口 | `verdict.py::_missing_findings` `verdict.py::_permit_findings` |
+| `REVIEW` 待复核 | `REPORT_CONFLICT` 同报码冲突载荷；`MISSING_EVIDENCE` 原因缺证、超采信等缺证片段；`APPROVAL_GAP` 已批准但缺批准凭据；`NO_SERVICE` 无有效营业窗口 | `verdict.py` |
+
+- 疑点等级 `SUSPEND > REVIEW > OPEN`，每条疑点保留来源行号、原始值与文字依据，全部进入开放记录与下载附件，重试不丢失。
+- 开放批次以班报 `id` 为主键存 SQLite `openings` 表，`INSERT ... ON CONFLICT DO NOTHING` 保证同一批重跑只复用、不新增也不改换结论；结论摘要含输入与结果双重 SHA-256，留档结果被改动时拒绝裁决（`OPENING_MISMATCH`）。
+- 见 `tests/test_openings.py`：异常样例两台均 `SUSPEND`（含未恢复与未批检修），干净样例两台均 `OPEN`，冲突-only 场景落 `REVIEW`，并发与重试幂等、下载与页面同源。

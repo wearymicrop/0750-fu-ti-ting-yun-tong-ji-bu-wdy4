@@ -9,6 +9,15 @@ const labels = {
   MATCHED: '时长已对平', MISSING_EVIDENCE: '时长对平 · 有缺证', NO_SERVICE: '无营业时段',
   UNBALANCED: '时长有差额', CONFIRMED: '已确认', approved: '已批准', pending: '待审批', denied: '未批准',
   clean: '干净样例', dirty: '异常样例', custom: '本地班报',
+  OPEN: '开放', SUSPEND: '暂停', REVIEW: '待复核',
+  OPEN_OUTAGE: '停运未恢复', MAINTENANCE_UNAPPROVED: '检修未批准',
+  REPORT_CONFLICT: '同码冲突', APPROVAL_GAP: '凭据缺失',
+};
+export const openingLabels = {
+  OPEN: '开放', SUSPEND: '暂停', REVIEW: '待复核',
+  OPEN_OUTAGE: '停运未恢复', MAINTENANCE_UNAPPROVED: '检修未批准',
+  MISSING_EVIDENCE: '缺证片段', REPORT_CONFLICT: '同码冲突',
+  APPROVAL_GAP: '凭据缺失', NO_SERVICE: '无营业窗口',
 };
 export const label = value => labels[value] ?? value ?? '—';
 export const num = value => value == null ? '—' : value.toLocaleString('zh-CN');

@@ -9,6 +9,7 @@ templates = Jinja2Templates(directory=ROOT / 'app' / 'templates')
 SECTIONS = {
     'reconcile': '可用率核对', 'schedules': '设备班表', 'events': '故障事件',
     'clipping': '时段裁切', 'attribution': '原因归属', 'exemptions': '豁免计入', 'runs': '班报归档',
+    'openings': '开放记录',
 }
 
 
